@@ -5,25 +5,35 @@
                 <div class="logo full-left">
                     <router-link to="/"><img src="/static/image/logo.png" alt=""></router-link>
                 </div>
-<!--                <ul class="nav full-left">-->
-<!--                    <li><span>Java进阶之路</span></li>-->
-<!--                    <li><span>大数据成功法门</span></li>-->
-<!--                    <li><span>Python全栈</span></li>-->
-<!--                    <li><span>人工智能的魅力</span></li>-->
-<!--                    <li><span>百知教育</span></li>-->
-<!--                </ul>-->
-                    <ul >
 
-                        <li><span  v-for="(nav, key) in nav_list" :key="key"> <span v-if="nav.position===1">&nbsp {{nav.title}} &nbsp</span></span> </li>
+
+                     <ul class="nav full-left">
+
+                        <li v-for="(nav, key) in nav_list" :key="key"> <span v-if="nav.position===1">{{nav.title}}</span></li>
 
                     </ul>
-                <div class="login-bar full-right">
+
+
+                <!--          用户存在      -->
+                <div class="login-bar full-right" v-if="token">
                     <div class="shop-cart full-left">
                         <img src="/static/image/" alt="">
                         <span><router-link to="/cart">购物车</router-link></span>
                     </div>
                     <div class="login-box full-left">
-                        <span>登录</span>
+                        <router-link to="/home/login/">个人中心</router-link>
+                        &nbsp;|&nbsp;
+                        <span>退出登录</span>
+                    </div>
+                </div>
+                <!--          用户不存在      -->
+                <div class="login-bar full-right" v-else>
+                    <div class="shop-cart full-left">
+                        <img src="/static/image/" alt="">
+                        <span><router-link to="/cart">购物车</router-link></span>
+                    </div>
+                    <div class="login-box full-left">
+                        <router-link to="/home/login/">登录</router-link>
                         &nbsp;|&nbsp;
                         <span>注册</span>
                     </div>
@@ -39,6 +49,7 @@
         data(){
             return{
                 nav_list:[], // 轮播图的数据
+                token: "",
             }
         },
         methods:{
@@ -55,11 +66,17 @@
                     console.log(error);
                 })
             },
+            //获得token
+            get_token() {
+                this.token = localStorage.user_token || sessionStorage.user_token;
+                // return this.token;
+            },
         },
         // 在当前页面渲染之前将数据获取并赋值给 data
         created() {
             // 获取轮播图数据
             this.get_all_banner();
+            this.get_token()
         }
     }
 </script>
