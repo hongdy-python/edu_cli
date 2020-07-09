@@ -9,7 +9,7 @@
 
                      <ul class="nav full-left">
 
-                        <li v-for="(nav, key) in nav_list" :key="key"> <span v-if="nav.position===1">{{nav.title}}</span></li>
+                        <li v-for="(nav, key) in nav_list" :key="key"><a href=""></a> <span v-if="nav.position===1">{{nav.title}}</span></li>
 
                     </ul>
 
@@ -23,7 +23,7 @@
                     <div class="login-box full-left">
                         <router-link to="/home/login/">个人中心</router-link>
                         &nbsp;|&nbsp;
-                        <span>退出登录</span>
+                        <span @click="exit">退出登录</span>
                     </div>
                 </div>
                 <!--          用户不存在      -->
@@ -71,6 +71,11 @@
                 this.token = localStorage.user_token || sessionStorage.user_token;
                 // return this.token;
             },
+            exit(){
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            }
         },
         // 在当前页面渲染之前将数据获取并赋值给 data
         created() {
