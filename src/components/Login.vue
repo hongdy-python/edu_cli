@@ -140,6 +140,7 @@
                         type: 'success'
                     });
                     // 登录成功后返回首页
+                    // location.reload()
                     this.$router.push("/");
                 }).catch(error => {
                     this.$message.error("用户名或密码错误");
