@@ -7,11 +7,23 @@
                 </div>
 
 
-                     <ul class="nav full-left">
+                <ul class="nav full-left">
 
-                        <li v-for="(nav, key) in nav_list" :key="key"><a href=""></a> <span v-if="nav.position===1">{{nav.title}}</span></li>
+<!--                    <li v-for="(nav, index) in nav_list" :key="index">-->
+<!--                        &lt;!&ndash;                项目外的连接        &ndash;&gt;-->
+<!--                        <span v-if="nav.is_site "><a :href="nav.link">{{nav.title}}</a></span>-->
+<!--                        &lt;!&ndash;                本项目的路由        &ndash;&gt;-->
+<!--                        <span v-else><router-link :to="nav.link">{{nav.title}}</router-link></span>-->
+<!--                    </li>-->
+                    <li v-for="(nav, key) in nav_list" :key="key">
+                        <span v-if="nav.position===1">
+<!--                            {{nav.title}}-->
+                            <span v-if="nav.is_site===2"><a :href="nav.link">{{nav.title}}</a></span>
+                            <span v-else><router-link :to="nav.link">{{nav.title}}</router-link></span>
+                        </span>
+                    </li>
 
-                    </ul>
+                </ul>
 
 
                 <!--          用户存在      -->
@@ -46,24 +58,23 @@
 <script>
     export default {
         name: "Header",
-        data(){
-            return{
-                nav_list:[], // 轮播图的数据
+        data() {
+            return {
+                nav_list: [], // 轮播图的数据
                 token: "",
             }
         },
-        methods:{
-            get_all_banner(){
+        methods: {
+            get_all_banner() {
                 this.$axios({
                     // url:this.$settings.HOST+'home/banner/',
-                    url:this.$settings.HOST+'home/nav/',
+                    url: this.$settings.HOST + 'home/nav/',
                     method: "get",
-                }).then(res=>{
+                }).then(res => {
                     // 当前请求的返回值可以通过res接受到
-                    console.log(res.data);
                     this.nav_list = res.data;
-                }).catch(error=>{
-                    console.log(error);
+                }).catch(error => {
+
                 })
             },
             //获得token
@@ -71,7 +82,7 @@
                 this.token = localStorage.user_token || sessionStorage.user_token;
                 // return this.token;
             },
-            exit(){
+            exit() {
                 localStorage.clear();
                 sessionStorage.clear();
                 location.reload();

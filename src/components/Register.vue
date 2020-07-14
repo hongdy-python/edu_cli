@@ -68,7 +68,7 @@
 
                 }).catch(error => {
                     console.log(error.response);
-                    this.$message.error("注册失败");
+                    this.$message.error(error.response+"注册失败");
                 })
             },
 
