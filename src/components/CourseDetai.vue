@@ -79,7 +79,14 @@
 
                     </div>
                     <div class="tab-item" v-if="tabIndex==3">
-                        用户评论
+                        <!--            留言板            -->
+                        <input type="text" v-model="msg">
+                        <button @click="add_note">添加留言</button>
+                        <br>
+                        <ul>
+                            <li v-for="(message, index) in msg_list">{{message}} <a href="javascript:;" @click="delMsg(index)">删除</a></li>
+                        </ul>
+
                     </div>
                     <div class="tab-item" v-if="tabIndex==4">
                         常见问题
@@ -121,6 +128,11 @@
                 course_infor: {
                     teacher: {}
                 },
+
+                msg: "",
+                // 如果有值 则遍历显示  如果没值 显示为空
+                msg_list: localStorage.msgs ? JSON.parse(localStorage.msgs) : [],
+
                 chapter_list: [],
                 tabIndex: 2, // 当前选项卡显示的下标
                 playerOptions: {
@@ -171,12 +183,31 @@
                         course: this.course_id
                     }
                 }).then(res => {
-                    console.log(res,123);
+                    console.log(res, 123);
                     this.chapter_list = res.data
                 }).catch(error => {
                     // console.log(error);
                 })
             },
+            add_note() {
+                let msg = this.msg;
+                console.log(msg);
+                if (msg) {
+                    this.msg_list.push(this.msg);
+                    // 将留言板数据持久化到local
+                    localStorage.msgs = JSON.stringify(this.msg_list);
+                    this.msg = "";
+                }
+            },
+            delMsg(index){
+                // 先删除页面留言板的
+                console.log(index);
+                this.msg_list.splice(index,1);
+                // 再删除localStorage的
+                let  msgs = JSON.parse(localStorage.getItem('msgs'));
+                msgs.splice(index,1);
+                localStorage.msgs = JSON.stringify(msgs);
+            }
         },
         created() {
             this.selete_all();
