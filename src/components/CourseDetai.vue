@@ -18,21 +18,39 @@
                 <div class="wrap-right">
                     <h3 class="course-name"> {{course_infor.name}}</h3>
                     <p class="data">{{course_infor.students}}人在学&nbsp;&nbsp;&nbsp;&nbsp;课程总时长：{{course_infor.lessons}}课时/{{course_infor.period}}小时&nbsp;&nbsp;&nbsp;&nbsp;难度：{{course_infor.level_name}}</p>
-                    <div class="sale-time">
-                        <p class="sale-type">限时免费</p>
-                        <p class="expire">距离结束：仅剩 110天 13小时 33分 <span class="second">08</span> 秒</p>
+                    <!--                    判断是否有活动-->
+                    <div class="sale-time" v-if="course_infor.active_time">
+                        <p class="sale-type">{{course_infor.discount_name}}</p>
+                        <p class="expire">距离结束：仅剩 {{parseInt(course_infor.active_time/(24*3600))}}天
+                            {{parseInt(course_infor.active_time/3600%24)}}小时
+                            {{parseInt(course_infor.active_time/60%60)}}分 <span class="second">{{parseInt(course_infor.active_time%60)}}</span>
+                            秒</p>
                     </div>
-                    <p class="course-price">
+                    <!--                    有活动-->
+                    <p class="course-price" v-if="course_infor.active_time">
                         <span>活动价</span>
-                        <span class="discount">¥0.00</span>
-                        <span class="original">¥29.00</span>
+<!--                        <span class="discount">¥{{course_infor.real_price}}</span>-->
+                        <span class="discount">￥{{parseFloat(course_infor.real_price).toFixed(2)}}</span>
+                        <span class="original">¥{{course_infor.price}}</span>
+                    </p>
+                    <!--没活动-->
+                    <p class="course-price" v-else>
+                        <span>价格：</span>
+                        <span class="discount">¥{{course_infor.real_price}}</span>
                     </p>
                     <div class="buy">
                         <div class="buy-btn">
-                            <button class="buy-now">立即购买</button>
+
+
+                            <router-link to="/order">
+                                <button class="buy-now" @click="add_cart">立即购买</button>
+                            </router-link>
                             <button class="free">免费试学</button>
                         </div>
-                        <div class="add-cart"><img src="/static/image/cart-yellow.svg" alt="">加入购物车</div>
+                        <div class="add-cart" @click="add_cart">
+                            <!--                            <img src="/static/image/cart-yellow.svg" alt="">-->
+                            加入购物车
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,7 +78,7 @@
                         </div>
                         <!--           章节             -->
                         <div class="chapter-item" v-for="chapter in chapter_list">
-                            <p class="chapter-title"><img src="/static/image/1.svg" alt="">第{{chapter.chapter}}章·{{chapter.name}}
+                            <p class="chapter-title"><img src="/static/image/logo.png" alt="">第{{chapter.chapter}}章·{{chapter.name}}
                             </p>
                             <ul class="lesson-list">
                                 <!--          课时                      -->
@@ -71,7 +89,7 @@
                                         <span class="free" :v-if="lesson.free_trail">免费</span>
                                     </p>
                                     <p class="time">{{lesson.duration}} <img
-                                        src="/static/image/logo.png"></p>
+                                        src="/static/image/bof.png"></p>
                                     <button class="try">立即试学</button>
                                 </li>
                             </ul>
@@ -80,11 +98,12 @@
                     </div>
                     <div class="tab-item" v-if="tabIndex==3">
                         <!--            留言板            -->
-                        <input type="text" v-model="msg">
+                        <input type="text" v-model="msg" class="text">
                         <button @click="add_note">添加留言</button>
                         <br>
                         <ul>
-                            <li v-for="(message, index) in msg_list">{{message}} <a href="javascript:;" @click="delMsg(index)">删除</a></li>
+                            <li v-for="(message, index) in msg_list">{{message}} <a href="javascript:;"
+                                                                                    @click="delMsg(index)">删除</a></li>
                         </ul>
 
                     </div>
@@ -162,14 +181,28 @@
 
             },
             selete_all() {
+                console.log("成功进入详情页");
                 this.course_id = this.$route.params.id;
+                // console.log(111);
                 this.$axios.get(`${this.$settings.HOST}course/list_infor/${this.course_id}`
                 ).then(response => {
-                    console.log(response.data);
+                    // console.log(response.data);
+                    // console.log(112);
                     this.course_infor = response.data;
+                    // console.log(113);
                     //播放的视频
                     this.playerOptions.sources[0].src = response.data.course_video;
                     this.playerOptions.poster = response.data.course_img;
+                    // 设置课程活动的倒计时
+                    if (this.course_infor.active_time > 0) {
+                        let timer = setInterval(() => {
+                            if (this.course_infor.active_time > 1) {
+                                this.course_infor.active_time -= 1
+                            } else {
+                                clearInterval(timer)
+                            }
+                        }, 1000)
+                    }
 
                 }).catch(error => {
                     console.log(error.response);
@@ -183,12 +216,14 @@
                         course: this.course_id
                     }
                 }).then(res => {
+                    console.log(222);
                     console.log(res, 123);
                     this.chapter_list = res.data
                 }).catch(error => {
                     // console.log(error);
                 })
             },
+
             add_note() {
                 let msg = this.msg;
                 console.log(msg);
@@ -199,15 +234,84 @@
                     this.msg = "";
                 }
             },
-            delMsg(index){
+            delMsg(index) {
                 // 先删除页面留言板的
                 console.log(index);
-                this.msg_list.splice(index,1);
+                this.msg_list.splice(index, 1);
                 // 再删除localStorage的
-                let  msgs = JSON.parse(localStorage.getItem('msgs'));
-                msgs.splice(index,1);
+                let msgs = JSON.parse(localStorage.getItem('msgs'));
+                msgs.splice(index, 1);
                 localStorage.msgs = JSON.stringify(msgs);
-            }
+            },
+            //检查用户是否已登录
+            check_user_login() {
+                console.log(125);
+                let token = localStorage.user_token || sessionStorage.user_token;
+                console.log(token, 123123, typeof (token));
+                if (!token) {
+                    console.log(126);
+                    let self = this;
+                    this.$confirm("对不起请登录再添加购物车", {
+                        callback() {
+                            self.$router.push("/home/login/")
+                        }
+                    });
+                    return false
+                } else {
+                    return token
+                }
+
+
+            },
+
+
+            //添加商品到购物车
+            add_cart() {
+                //判断用户是否登录
+                console.log(123);
+                let token = this.check_user_login();
+                console.log(token, typeof (token));
+                //发起请求添加商品
+                // this.$axios({
+                //     // url:`${this.$settings.HOST}cart/option/`,
+                //     url:this.$settings.HOST + 'cart/option/',
+                //     method: "post",
+                //     data: {
+                //        course_id: this.course_id
+                //     },
+                //     config: {
+                //         headers: {
+                //             //提交token必须在请求头声明token ，jwt必须有空格
+                //             "Authorization": "jwt " + token,
+                //         }
+                //     }
+                // }).then(response => {
+                //     console.log(response.data);
+                //     this.$message.success(response.data.message);
+                //     //向状态机提交动作来修改商品的总数
+                //     this.$store.commit("add_cart", response.data.cart_length)
+                //
+                // }).catch(error => {
+                //     console.log(error.response)
+                // })
+
+                this.$axios.post(`${this.$settings.HOST}cart/option/`, {
+                    course_id: this.course_id,
+                }, {
+                    headers: {
+                        //提交token必须在请求头声明token ，jwt必须有空格
+                        "Authorization": "jwt " + token,
+                    }
+                }).then(response => {
+                    console.log(response.data);
+                    this.$message.success(response.data.message);
+                    //向状态机提交动作来修改商品的总数
+                    this.$store.commit("add_cart", response.data.cart_length)
+                }).catch(error => {
+                    this.$message.error(error.response)
+                })
+            },
+
         },
         created() {
             this.selete_all();
@@ -420,9 +524,14 @@
 
     .tab-item {
         width: 880px;
+        /**/
         background: #fff;
         padding-bottom: 20px;
         box-shadow: 0 2px 4px 0 #f0f0f0;
+    }
+
+    .text {
+        width: 700px;
     }
 
     .tab-item-title {

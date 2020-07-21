@@ -29,7 +29,7 @@
                         <li class="price" @click="change_order_type('price')" :class="change_order_class('price')">价格
                         </li>
                     </ul>
-                    <p class="condition-result">共21个课程</p>
+                    <p class="condition-result">共{{total}}个课程</p>
                 </div>
 
             </div>
@@ -42,7 +42,7 @@
                     </div>
                     <div class="course-info">
                         <h3>
-                            <router-link :to="'/course/detail/'+course.id" >{{course.name}}</router-link>
+                            <router-link :to="'/course/detail/'+course.id">{{course.name}}</router-link>
                             <span><img src="/static/image/03.png" alt="">{{course.students}}人已加入学习</span>
                         </h3>
                         <p class="teather-info">huxz 百知教育教学总监
@@ -57,10 +57,21 @@
 
                         </ul>
                         <div class="pay-box">
-                            <span class="discount-type">限时免费</span>
-                            <span class="discount-price">￥0.00元</span>
-                            <span class="original-price">原价：{{course.price}}元</span>
-                            <span class="buy-now">立即购买</span>
+                            <!--有活动-->
+                            <span v-if="course.discount_name">
+                                <span class="discount-type">{{course.discount_name}}</span>
+                                <!--                                保留两位小数-->
+<!--                                <span class="discount-price">￥{{course.real_price}}</span>-->
+                                <span class="discount-price">￥{{parseFloat(course.real_price).toFixed(2)}}</span>
+                                <span class="original-price">原价：{{course.price}}元</span>
+                            </span>
+                            <!--没活动-->
+                            <span v-else>
+                                <span class="discount-price">￥{{course.price}}</span>
+                            </span>
+
+                            <router-link :to="'/course/detail/'+course.id"><span class="buy-now">立即购买</span>
+                            </router-link>
                         </div>
                     </div>
                 </div>
@@ -82,6 +93,11 @@
 </template>
 
 <script>
+
+    import Header from "./common/Header";
+    import Footer from "./common/Footer";
+    import CartItem from "./common/CartItem";
+
     export default {
         name: "Course",
         data() {
@@ -94,7 +110,8 @@
                 // 对数据进行过滤
                 filters: {
                     type: "id", // 筛选类型
-                    orders: "desc", // 排序类型  desc降序 asc  升序
+                    // orders: "desc", // 排序类型  desc降序 asc  升序
+                    orders: "asc", // 排序类型  desc降序 asc  升序
                     page: 1, // 分页的页码
                     size: 2,    // 每页展示的数量
                 },
@@ -194,7 +211,10 @@
         created() {
             this.get_all_category();
             this.get_course_list();
-        }
+        },
+        components: {
+            CartItem, Header, Footer
+        },
     }
 </script>
 

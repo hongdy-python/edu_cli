@@ -30,9 +30,11 @@
                     console.log(error);
                 })
             },
+
         },
         // 在当前页面渲染之前将数据获取并赋值给 data
         created() {
+
             // 获取轮播图数据
             this.get_all_banner();
         }

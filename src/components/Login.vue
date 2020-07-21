@@ -1,5 +1,5 @@
 <template>
-     <div class="login box">
+    <div class="login box">
         <img src="../../static/image/227.jpg" alt="">
         <div class="login">
             <div class="login-title">
@@ -7,11 +7,18 @@
                 <p>百知教育给你最优质的学习体验!</p>
             </div>
             <div class="login_box">
-                <div class="title">
-                    <span>密码登录</span>
-                    <span>短信登录</span>
+                <!--密码登录-->
+                <div class="title" v-if="loginwayy">
+                    <span @click="loginway"> <span style="color: #4a4a4a;border-bottom: 2px solid #84cc39;">密码登录</span></span>
+                    <span @click="loginwayt"><span>短信登录</span></span>
                 </div>
-                <div class="inp" v-if="">
+                <!--短信登录  注释掉原本的css（242行），自己添加了一个if和span控制样式-->
+                <div class="title" v-else>
+                    <span @click="loginway">密码登录</span>
+                    <span @click="loginwayt"><span style="color: #4a4a4a;border-bottom: 2px solid #84cc39;">短信登录</span></span>
+                </div>
+                <!--密码登录-->
+                <div class="inp" v-if="loginwayy">
                     <input type="text" placeholder="用户名 / 手机号码" class="user" v-model="username">
                     <input type="password" name="" class="pwd" placeholder="密码" v-model="password">
                     <div id="geetest1"></div>
@@ -27,16 +34,19 @@
                         <router-link to="/home/register"> 立即注册</router-link>
                     </p>
                 </div>
-                <div class="inp" v-show="">
-                    <input type="text" placeholder="手机号码" class="user">
-                    <input type="text" class="pwd" placeholder="短信验证码">
-                    <button id="get_code" class="btn btn-primary">获取验证码</button>
-                    <button class="login_btn">登录</button>
+                <!--短信登录-->
+                <div class="inp" v-else>
+                    <input type="text" placeholder="手机号码" class="user" v-model="username">
+                    <input type="text" class="pwd" v-model="code" placeholder="短信验证码">
+<!--                    <button id="get_code" class="btn btn-primary" @click="get_code">获取验证码</button>-->
+                    <div class="sms-box"><div class="sms-btn" @click="get_code">{{sms_text}}</div></div>
+                    <button class="login_btn" @click="dxlogin">登录</button>
                     <span class="go_login">没有账号
-<!--                    <span>立即注册</span>-->
+                        <!--                    <span>立即注册</span>-->
                     <router-link to="/home/register"> 立即注册</router-link>
                 </span>
                 </div>
+
             </div>
         </div>
     </div>
@@ -50,9 +60,21 @@
                 username: "",
                 password: "",
                 remember_me: false,
+                loginwayy: 1,
+                code:'',
+                mobile:'',
+                sms_text: "获取验证码", // 提示语
+                sms_flag: false,    // 能否再次发送短信
             }
         },
         methods: {
+            loginway() {
+                this.loginwayy = 1;
+            },
+            loginwayt() {
+                this.loginwayy = 0
+            },
+
             // 点击登录时  弹出验证码框 当验证码成功验证后  才可以发起登录请求
             get_captcha() {
                 // 向API服务端发起请求获取验证码
@@ -95,13 +117,13 @@
                             geetest_validate: validate.geetest_validate,
                             geetest_seccode: validate.geetest_seccode
                         }
-                    }).then(response=>{
+                    }).then(response => {
                         console.log(response.data);
-                        if(response.data.status){
+                        if (response.data.status) {
                             // 验证码验证成功  登录
                             self.user_login()
                         }
-                    }).catch(error=>{
+                    }).catch(error => {
                         console.log(error);
                     });
                 });
@@ -147,6 +169,62 @@
                     this.$message.error("用户名或密码错误");
                 })
             },
+
+            //短信登录    为手机号获取验证码
+            get_code() {
+                // 验证手机号格式
+                if (!/1[35689]\d{9}/.test(this.username)) {
+                    this.$alert("手机号格式有误", "警告");
+                    return false
+                }
+                this.$axios({
+                    url: this.$settings.HOST + "user/sms/" + `${this.username}`,
+                    method: "get",
+                }).then(response => {
+                    console.log(response.data);
+
+                    // 成功则可以再次发送短信
+                    this.sms_flag = true;
+                    let interval = 60;
+                    let timer = setInterval(() => {
+                        if (interval <= 1) {
+                            // 停止倒计时  允许发送短信
+                            clearInterval(timer);
+                            this.sms_flag = false; // 设置允许发送短信 false
+                            this.sms_text = `点击发送短信`
+                        } else {
+                            interval--;
+                            this.sms_text = `${interval}后可以点击发送`;
+                        }
+                    }, 1000)
+
+                }).catch(error => {
+                    console.log(error.response);
+                    this.$message.error("当前手机号已经发送过短信")
+                })
+            },
+            //短信登录
+            dxlogin(){
+                this.$axios({
+                    url: this.$settings.HOST + "user/dxlogin/",
+                    method: "post",
+                    data: {
+                        username: this.username,
+                        sms_code: this.code,
+                    }
+                }).then(response => {
+                        localStorage.clear();
+                        sessionStorage.user_token = response.data.token;
+                    this.$message({
+                        message: '恭喜你，登录成功',
+                        type: 'success'
+                    });
+                    // 登录成功后返回首页
+                    this.$router.push("/");
+                }).catch(error => {
+                    this.$message.error("用户名或验证码错误");
+                })
+            },
         }
     }
 </script>
@@ -158,6 +236,25 @@
         height: 100%;
         position: relative;
         overflow: hidden;
+    }
+
+    .sms-box {
+        position: relative;
+    }
+
+    .sms-btn {
+        font-size: 14px;
+        color: #ffc210;
+        letter-spacing: .26px;
+        position: absolute;
+        right: 16px;
+        top: 10px;
+        cursor: pointer;
+        overflow: hidden;
+        background: #fff;
+        border-left: 1px solid #484848;
+        padding-left: 16px;
+        padding-bottom: 4px;
     }
 
     .box img {
@@ -218,10 +315,10 @@
         cursor: pointer;
     }
 
-    .login_box .title span:nth-of-type(1) {
-        color: #4a4a4a;
-        border-bottom: 2px solid #84cc39;
-    }
+    /*.login_box .title span:nth-of-type(1) {*/
+    /*    color: #4a4a4a;*/
+    /*    border-bottom: 2px solid #84cc39;*/
+    /*}*/
 
     .inp {
         width: 350px;

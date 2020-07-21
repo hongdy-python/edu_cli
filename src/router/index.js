@@ -5,9 +5,13 @@ import Login from "../components/Login";
 import Register from "../components/Register";
 import Course from "../components/Course";
 import CourseDetai from "../components/CourseDetai";
+import Cart from "../components/Cart";
+import Order from "../components/Order";
+import OrderSuccess from "../components/OrderSuccess";
 Vue.use(Router);
 
 export default new Router({
+    mode:'history',
     routes: [
         {
             path: '/',
@@ -38,6 +42,26 @@ export default new Router({
             path: '/course/detail/:id',
             name:"Detail",
             component: CourseDetai
+        },
+        {
+            path: '/cart',
+            name:"Cart",
+            component: Cart
+        },
+        {
+            path: '/order',
+            name:"Order",
+            component: Order
+        },
+        {
+            path: '/python/order',
+            name:"Order",
+            component: Order
+        },
+        {
+            path: '/ordersuccess',
+            name:"OrderSuccess",
+            component: OrderSuccess
         },
     ]
 })

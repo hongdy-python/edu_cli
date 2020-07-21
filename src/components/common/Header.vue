@@ -18,7 +18,8 @@
                     <li v-for="(nav, key) in nav_list" :key="key">
                         <span v-if="nav.position===1">
 <!--                            {{nav.title}}-->
-                            <span v-if="nav.is_site===2"><a :href="nav.link">{{nav.title}}</a></span>
+                            <span v-if="nav.is_site"><a :href="nav.link" >{{nav.title}}</a></span>
+
                             <span v-else><router-link :to="nav.link">{{nav.title}}</router-link></span>
                         </span>
                     </li>
@@ -30,7 +31,7 @@
                 <div class="login-bar full-right" v-if="token">
                     <div class="shop-cart full-left">
                         <img src="/static/image/" alt="">
-                        <span><router-link to="/cart">购物车</router-link></span>
+                        <span><router-link to="/cart"><img src="/static/image/gwc.jpg" alt="">{{this.$store.state.cart_length}}购物车</router-link></span>
                     </div>
                     <div class="login-box full-left">
                         <router-link to="/home/login/">个人中心</router-link>
@@ -86,10 +87,30 @@
                 localStorage.clear();
                 sessionStorage.clear();
                 location.reload();
-            }
+            },
+            //主页面显示购物车里商品的数量
+            cart_length(){
+                // let abc = this.$store.state.cart_length;
+                let token = localStorage.user_token || sessionStorage.user_token;
+                this.$axios.get(`${this.$settings.HOST}cart/option/`, {
+                    headers: {
+                        //提交token必须在请求头声明token ，jwt必须有空格
+                        "Authorization": "jwt " + token,
+                    }
+                }).then(response => {
+                    console.log(response.data);
+                    this.cart_list = response.data;
+                    this.$store.commit("cart_length", this.cart_list.length);
+
+                }).catch(error => {
+                    console.log(error.response);
+                })
+            },
         },
+
         // 在当前页面渲染之前将数据获取并赋值给 data
         created() {
+            this.cart_length();
             // 获取轮播图数据
             this.get_all_banner();
             this.get_token()
@@ -172,7 +193,9 @@
         cursor: pointer;
         font-size: 14px;
         height: 28px;
-        width: 100px;
+        /*修改宽度，使购物车三个字在一行*/
+        /*width: 100px;*/
+        width: 118px;
         margin-top: 30px;
         line-height: 32px;
         text-align: center;
