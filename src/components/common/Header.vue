@@ -22,6 +22,14 @@
 
                             <span v-else><router-link :to="nav.link">{{nav.title}}</router-link></span>
                         </span>
+
+                    </li>
+                    <li >
+                        <div class="login-bar full-right">
+                            <div class="shop-cart full-left">
+                            <router-link to="orderlist"> 支付清单</router-link>
+                            </div>
+                        </div>
                     </li>
 
                 </ul>
@@ -32,7 +40,9 @@
                     <div class="shop-cart full-left">
                         <img src="/static/image/" alt="">
                         <span><router-link to="/cart"><img src="/static/image/gwc.jpg" alt="">{{this.$store.state.cart_length}}购物车</router-link></span>
+
                     </div>
+
                     <div class="login-box full-left">
                         <router-link to="/home/login/">个人中心</router-link>
                         &nbsp;|&nbsp;
@@ -157,7 +167,8 @@
         float: left;
         height: 80px;
         line-height: 80px;
-        margin-right: 30px;
+        /*margin-right: 30px;*/
+        margin-right: 17px;
         font-size: 16px;
         color: #4a4a4a;
         cursor: pointer;

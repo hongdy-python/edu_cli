@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="order-info">
-                <p class="info1"><b>付款时间：</b><span>{{pay_time}}</span></p>
+                <p class="info1"><b>付款时间：</b><span>{{$moment(pay_time).format('YYYY-MM-DD')}}</span></p>
                 <p class="info2"><b>付款金额：</b><span>￥{{real_price}}元</span></p>
                 <p class="info3"><b>课程信息：</b><span v-for="course in course_list">{{course.name}}</span></p>
             </div>

@@ -11,6 +11,12 @@ import axios from "axios";
 
 Vue.prototype.$axios = axios;
 
+// 格式化时间
+import moment from 'moment'
+
+Vue.prototype.$moment = moment;
+
+
 //element-ui
 import Element from "element-ui"
 import 'element-ui/lib/theme-chalk/index.css'
